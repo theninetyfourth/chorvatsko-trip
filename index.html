@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chorvátsko Trip 🌊</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f7f3ee;--surface:#fff;--surface2:#f0ebe4;--border:#e2d9cf;
+  --text:#2c2417;--muted:#8a7968;--accent:#c17f3e;--accent-light:#f0e4d4;
+  --danger:#c0392b;--radius:12px;--radius-sm:6px;
+  --font-d:'Playfair Display',Georgia,serif;
+  --font-b:'DM Sans',system-ui,sans-serif;
+}
+body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height:100vh}
+button{cursor:pointer;font-family:var(--font-b);border:none;background:none}
+input{font-family:var(--font-b)}
+
+.header{background:var(--surface);border-bottom:1px solid var(--border);padding:16px 24px}
+.header-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.title{font-family:var(--font-d);font-size:1.75rem;font-weight:700;letter-spacing:-0.02em}
+.title span{color:var(--accent)}
+.subtitle{font-size:0.85rem;color:var(--muted)}
+#saveStatus{font-size:0.78rem;font-weight:500;padding:3px 10px;border-radius:20px;margin-left:auto;display:none}
+#saveStatus.saving{display:inline;background:#fef3d0;color:#a86c32}
+#saveStatus.saved{display:inline;background:#dff0df;color:#27ae60}
+#saveStatus.error{display:inline;background:#fadbd8;color:#c0392b}
+
+.main{max-width:1200px;margin:0 auto;padding:24px;display:flex;gap:20px;align-items:flex-start}
+.calendar-area{flex:1;min-width:0;display:flex;flex-direction:column;gap:16px}
+
+.panel{background:var(--surface);border-radius:var(--radius);box-shadow:0 1px 3px rgba(44,36,23,.08);padding:20px;min-width:220px;display:flex;flex-direction:column;gap:20px}
+.sec-title{font-family:var(--font-d);font-size:0.95rem;font-weight:600;display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.badge{background:var(--accent-light);color:var(--accent);font-family:var(--font-b);font-size:0.72rem;font-weight:600;padding:1px 7px;border-radius:20px}
+.hint{font-size:0.78rem;color:var(--muted);background:var(--surface2);border-radius:var(--radius-sm);padding:7px 10px;line-height:1.4;margin-bottom:10px}
+.add-form{display:flex;gap:8px}
+.inp{flex:1;padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:0.9rem;color:var(--text);background:var(--bg);outline:none;min-width:0}
+.inp:focus{border-color:var(--accent);background:var(--surface)}
+.add-btn{padding:9px 16px;background:var(--accent);color:#fff;border-radius:var(--radius-sm);font-size:0.88rem;font-weight:600}
+.add-btn:hover{background:#a86c32}
+.err{font-size:0.8rem;color:var(--danger);margin-top:6px;display:none}
+.plist{list-style:none;display:flex;flex-direction:column;gap:4px}
+.pitem{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:var(--radius-sm);cursor:pointer;border:1.5px solid transparent;user-select:none;transition:.15s}
+.pitem:hover{background:var(--surface2)}
+.pitem.sel{background:var(--accent-light);border-color:var(--accent)}
+.sw{width:14px;height:14px;border-radius:50%;flex-shrink:0;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.pname{flex:1;font-size:0.88rem;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rbtn{width:20px;height:20px;border-radius:50%;background:var(--surface2);color:var(--muted);font-size:1rem;line-height:1;display:flex;align-items:center;justify-content:center;opacity:0;transition:.15s}
+.pitem:hover .rbtn{opacity:1}
+.rbtn:hover{background:#fadbd8;color:var(--danger)}
+.empty-state{display:flex;flex-direction:column;align-items:center;gap:12px;padding:20px 10px;color:var(--muted);text-align:center;font-size:0.85rem;line-height:1.5}
+
+.cal{background:var(--surface);border-radius:var(--radius);box-shadow:0 1px 3px rgba(44,36,23,.08);overflow:hidden}
+.cal-nav{display:flex;align-items:center;justify-content:space-between;padding:18px 24px;border-bottom:1px solid var(--border)}
+.mnth{font-family:var(--font-d);font-size:1.6rem;font-weight:700;letter-spacing:-0.02em}
+.yr{font-size:1rem;color:var(--muted);margin-left:10px}
+.nbtn{width:38px;height:38px;border-radius:50%;background:var(--surface2);color:var(--text);font-size:1.5rem;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);transition:.15s}
+.nbtn:hover{background:var(--accent-light);color:var(--accent)}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--border);border-top:1px solid var(--border)}
+.dh{background:var(--surface2);text-align:center;padding:10px 4px;font-size:0.72rem;font-weight:600;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+.dc{background:var(--surface);min-height:80px;padding:8px 8px 6px;display:flex;flex-direction:column;position:relative;transition:.15s}
+.dc.click{cursor:pointer}
+.dc.click:hover{background:var(--surface2)}
+.dn{font-size:.88rem;font-weight:500;color:var(--muted);line-height:1}
+.dc.tod .dn{background:var(--accent);color:#fff;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700}
+.dc.mkd{background:#fde8e7}
+.ec{background:var(--bg);min-height:80px}
+.dots{display:flex;flex-wrap:wrap;gap:3px;margin-top:6px}
+.dot{width:10px;height:10px;border-radius:50%;box-shadow:0 1px 2px rgba(0,0,0,.15)}
+
+.legend{background:var(--surface);border-radius:var(--radius);box-shadow:0 1px 3px rgba(44,36,23,.08);padding:16px 20px;display:none}
+.ltitle{font-family:var(--font-d);font-size:.9rem;font-weight:600;margin-bottom:12px}
+.litems{display:flex;flex-wrap:wrap;gap:8px}
+.litem{display:flex;align-items:center;gap:7px;padding:5px 10px;background:var(--bg);border-radius:20px;border:1px solid var(--border)}
+.lname{font-size:.82rem;font-weight:500}
+.lcnt{font-size:.72rem;font-weight:600;padding:1px 6px;border-radius:10px}
+
+.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80vh;gap:16px;color:var(--muted);font-size:.95rem}
+.spin{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+@media(max-width:768px){
+  .main{flex-direction:column;padding:12px;gap:14px}
+  .dc{min-height:56px;padding:5px 4px}
+  .dn{font-size:.75rem}
+  .dot{width:7px;height:7px}
+  .mnth{font-size:1.2rem}
+  .cal-nav{padding:12px 14px}
+  .title{font-size:1.4rem}
+}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <h1 class="title">Chorvátsko <span>Trip</span> 🌊</h1>
+    <p class="subtitle">Označte dni kedy nemôžete</p>
+    <span id="saveStatus"></span>
+  </div>
+</header>
+
+<div id="loading" class="loading">
+  <div class="spin"></div>
+  <p>Načítavam plán...</p>
+</div>
+
+<div id="app" style="display:none">
+  <main class="main">
+    <aside class="panel">
+      <div>
+        <div class="sec-title">Pridať osobu</div>
+        <div class="add-form">
+          <input class="inp" id="nameInp" type="text" placeholder="Meno..." maxlength="40">
+          <button class="add-btn" onclick="addPerson()">Pridať</button>
+        </div>
+        <div class="err" id="err"></div>
+      </div>
+      <div id="teamSec" style="display:none">
+        <div class="sec-title">Tím <span class="badge" id="cnt">0</span></div>
+        <div class="hint" id="hint">Vyber osobu a klikni na dátum</div>
+        <ul class="plist" id="plist"></ul>
+      </div>
+      <div id="emptyDiv" class="empty-state">
+        <div style="font-size:2rem">👥</div>
+        <p>Zatiaľ nikto.<br>Pridaj prvú osobu!</p>
+      </div>
+    </aside>
+
+    <div class="calendar-area">
+      <div class="cal">
+        <div class="cal-nav">
+          <button class="nbtn" onclick="nav(-1)">‹</button>
+          <div><span class="mnth" id="mnth"></span><span class="yr" id="yr"></span></div>
+          <button class="nbtn" onclick="nav(1)">›</button>
+        </div>
+        <div class="grid" id="grid"></div>
+      </div>
+      <div class="legend" id="legend">
+        <div class="ltitle">Legenda</div>
+        <div class="litems" id="litems"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+const URL = 'https://zpgvknlfnjuaodfcryph.supabase.co';
+const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpwZ3Zrbmxmbmp1YW9kZmNyeXBoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAzNDAxNzAsImV4cCI6MjA5NTkxNjE3MH0.sNIqyNX3f9QoIEII9PiHUTfq_3gvhVsCEM8wZEZHDoU';
+const H = {'apikey':KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json','Prefer':'return=minimal'};
+const COLORS=['#e8635a','#4a90d9','#5cb85c','#f0a500','#9b59b6','#1abc9c','#e67e22','#2980b9','#27ae60','#8e44ad','#16a085','#d35400','#f39c12','#7f8c8d'];
+const MONTHS=['Január','Február','Marec','Apríl','Máj','Jún','Júl','August','September','Október','November','December'];
+const DAYS=['Ne','Po','Ut','St','Št','Pi','So'];
+
+let state={people:[],unavailability:{}};
+let selId=null, vy=new Date().getFullYear(), vm=new Date().getMonth(), timer=null;
+
+async function load(){
+  const r=await fetch(`${URL}/rest/v1/scheduler_data?id=eq.1&select=data`,{headers:{'apikey':KEY,'Authorization':'Bearer '+KEY}});
+  const rows=await r.json();
+  return rows&&rows.length>0&&rows[0].data?JSON.parse(rows[0].data):null;
+}
+
+async function save(){
+  const body=JSON.stringify({data:JSON.stringify(state)});
+  const r=await fetch(`${URL}/rest/v1/scheduler_data?id=eq.1`,{method:'PATCH',headers:H,body});
+  if(r.status===404||r.status===406){
+    await fetch(`${URL}/rest/v1/scheduler_data`,{method:'POST',headers:H,body:JSON.stringify({id:1,data:JSON.stringify(state)})});
+  }
+}
+
+function status(s){
+  const el=document.getElementById('saveStatus');
+  el.className=s;
+  el.textContent=s==='saving'?'⟳ Ukladám...':s==='saved'?'✓ Uložené':'✗ Chyba';
+  if(s==='saved')setTimeout(()=>{el.className='';el.textContent='';},3000);
+}
+
+function scheduleSave(){
+  status('saving');
+  if(timer)clearTimeout(timer);
+  timer=setTimeout(async()=>{try{await save();status('saved');}catch{status('error');}},800);
+}
+
+function c(i){return COLORS[i%COLORS.length];}
+function dk(y,m,d){return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;}
+
+function addPerson(){
+  const inp=document.getElementById('nameInp');
+  const name=inp.value.trim();
+  const err=document.getElementById('err');
+  if(!name){err.textContent='Zadaj meno.';err.style.display='block';return;}
+  if(state.people.some(p=>p.name.toLowerCase()===name.toLowerCase())){err.textContent='Meno už existuje.';err.style.display='block';return;}
+  err.style.display='none';
+  const id='p_'+Date.now();
+  state.people.push({id,name});
+  state.unavailability[id]=[];
+  inp.value='';
+  scheduleSave();
+  render();
+}
+
+function removePerson(id){
+  state.people=state.people.filter(p=>p.id!==id);
+  delete state.unavailability[id];
+  if(selId===id)selId=null;
+  scheduleSave();render();
+}
+
+function selectPerson(id){selId=selId===id?null:id;render();}
+
+function toggleDate(dateKey){
+  if(!selId)return;
+  const arr=state.unavailability[selId]||[];
+  const i=arr.indexOf(dateKey);
+  if(i>=0)arr.splice(i,1);else arr.push(dateKey);
+  state.unavailability[selId]=arr;
+  scheduleSave();render();
+}
+
+function nav(dir){
+  vm+=dir;
+  if(vm<0){vm=11;vy--;}
+  if(vm>11){vm=0;vy++;}
+  renderCal();
+}
+
+function render(){renderPanel();renderCal();renderLegend();}
+
+function renderPanel(){
+  const hasPeople=state.people.length>0;
+  document.getElementById('teamSec').style.display=hasPeople?'block':'none';
+  document.getElementById('emptyDiv').style.display=hasPeople?'none':'flex';
+  if(hasPeople){
+    document.getElementById('cnt').textContent=state.people.length;
+    document.getElementById('hint').textContent=selId?'Klikni na dátum pre označenie':'Vyber osobu nižšie';
+  }
+  const list=document.getElementById('plist');
+  list.innerHTML='';
+  state.people.forEach((p,i)=>{
+    const color=c(i);
+    const li=document.createElement('li');
+    li.className='pitem'+(selId===p.id?' sel':'');
+    li.innerHTML=`<span class="sw" style="background:${color}"></span><span class="pname">${p.name}</span><button class="rbtn" onclick="event.stopPropagation();removePerson('${p.id}')">×</button>`;
+    li.onclick=()=>selectPerson(p.id);
+    list.appendChild(li);
+  });
+}
+
+function renderCal(){
+  document.getElementById('mnth').textContent=MONTHS[vm];
+  document.getElementById('yr').textContent=vy;
+  const unavailMap={};
+  state.people.forEach(p=>{
+    (state.unavailability[p.id]||[]).forEach(k=>{
+      if(!unavailMap[k])unavailMap[k]=[];
+      unavailMap[k].push(p.id);
+    });
+  });
+  const grid=document.getElementById('grid');
+  grid.innerHTML='';
+  DAYS.forEach(d=>{const el=document.createElement('div');el.className='dh';el.textContent=d;grid.appendChild(el);});
+  const dim=new Date(vy,vm+1,0).getDate();
+  const fd=new Date(vy,vm,1).getDay();
+  const today=new Date();
+  for(let i=0;i<fd;i++){const el=document.createElement('div');el.className='ec';grid.appendChild(el);}
+  for(let d=1;d<=dim;d++){
+    const key=dk(vy,vm,d);
+    const isToday=today.getFullYear()===vy&&today.getMonth()===vm&&today.getDate()===d;
+    const isMkd=selId&&(state.unavailability[selId]||[]).includes(key);
+    const unavail=unavailMap[key]||[];
+    const cell=document.createElement('div');
+    cell.className='dc'+(isToday?' tod':'')+(isMkd?' mkd':'')+(selId?' click':'');
+    if(selId)cell.onclick=()=>toggleDate(key);
+    const dn=document.createElement('div');dn.className='dn';dn.textContent=d;cell.appendChild(dn);
+    if(unavail.length>0){
+      const dots=document.createElement('div');dots.className='dots';
+      unavail.slice(0,8).forEach(pid=>{
+        const pidx=state.people.findIndex(p=>p.id===pid);
+        if(pidx>=0){const dot=document.createElement('span');dot.className='dot';dot.style.background=c(pidx);dots.appendChild(dot);}
+      });
+      cell.appendChild(dots);
+    }
+    grid.appendChild(cell);
+  }
+}
+
+function renderLegend(){
+  const leg=document.getElementById('legend');
+  if(state.people.length===0){leg.style.display='none';return;}
+  leg.style.display='block';
+  const items=document.getElementById('litems');
+  items.innerHTML='';
+  state.people.forEach((p,i)=>{
+    const color=c(i);
+    const cnt=(state.unavailability[p.id]||[]).length;
+    const el=document.createElement('div');el.className='litem';
+    el.innerHTML=`<span class="sw" style="background:${color}"></span><span class="lname">${p.name}</span>${cnt>0?`<span class="lcnt" style="background:${color}22;color:${color}">${cnt} dní</span>`:''}`;
+    items.appendChild(el);
+  });
+}
+
+document.getElementById('nameInp').addEventListener('keydown',e=>{if(e.key==='Enter')addPerson();});
+
+// Init
+(async()=>{
+  try{const d=await load();if(d)state=d;}catch(e){console.error(e);}
+  document.getElementById('loading').style.display='none';
+  document.getElementById('app').style.display='block';
+  render();
+  setInterval(async()=>{
+    try{const d=await load();if(d&&JSON.stringify(d)!==JSON.stringify(state)){state=d;render();}}catch{}
+  },8000);
+})();
+</script>
+</body>
+</html>
